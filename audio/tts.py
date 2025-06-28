@@ -5,7 +5,7 @@ from gtts import gTTS
 from playsound import playsound
 import io
 
-def speak_text_gtts(text: str, lang='id'):
+def speak_text(text: str, lang='id'):
     """
     Text-to-Speech menggunakan Google TTS (gratis)
     """
