@@ -4,9 +4,8 @@ import streamlit as st
 from elevenlabs.client import ElevenLabs
 from playsound import playsound
 
-load_dotenv()
+API_KEY = st.secrets["TTS_API_KEY"]
 
-API_KEY = st.secrets("TTS_API_KEY")
 if not API_KEY:
     raise RuntimeError("TTS_API_KEY tidak ditemukan di .env")
 
