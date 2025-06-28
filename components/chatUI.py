@@ -10,14 +10,27 @@ def render_chat():
     /* Hide default streamlit elements */
     .block-container {
         padding-top: 2rem;
-        padding-bottom: 1rem;
-        max-width: 100%;
+        padding-bottom: 0rem;
     }
     
-    /* Main app styling */
-    .main .block-container {
-        padding-left: 1rem;
-        padding-right: 1rem;
+    /* Chat container styling */
+    .chat-container {
+        height: 500px;
+        overflow-y: auto;
+        padding: 1rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        background-color: #fafafa;
+        margin-bottom: 1rem;
+    }
+    
+    /* Input container styling */
+    .input-container {
+        position: sticky;
+        bottom: 0;
+        background: white;
+        padding: 1rem 0;
+        border-top: 1px solid #e0e0e0;
     }
     
     /* Custom button styling */
@@ -29,7 +42,6 @@ def render_chat():
         padding: 0.5rem 1rem;
         font-weight: 500;
         transition: all 0.3s ease;
-        width: 100%;
     }
     
     .stButton > button:hover {
@@ -38,60 +50,46 @@ def render_chat():
     }
     
     /* Mic button specific styling */
-    .mic-button .stButton > button {
+    .mic-button {
         background: linear-gradient(90deg, #ff6b6b 0%, #ee5a52 100%) !important;
-        font-size: 1.2rem;
-        padding: 0.75rem;
     }
     
     /* TTS button styling */
-    .tts-button .stButton > button {
+    .tts-button {
         background: linear-gradient(90deg, #4ecdc4 0%, #44a08d 100%) !important;
-        font-size: 0.9rem !important;
-        padding: 0.4rem 0.8rem !important;
-        width: auto !important;
-        min-width: 60px;
+        font-size: 0.8rem !important;
+        padding: 0.3rem 0.8rem !important;
     }
     
-    /* Chat input styling */
-    .stChatInput > div > div > input {
-        border-radius: 25px;
-        border: 2px solid #e0e0e0;
-        padding: 0.75rem 1rem;
+    /* Chat message styling */
+    .user-message {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.8rem 1rem;
+        border-radius: 18px 18px 5px 18px;
+        margin: 0.5rem 0;
+        margin-left: 2rem;
     }
     
-    /* Chat message container */
-    .chat-message {
-        margin: 1rem 0;
+    .assistant-message {
+        background: #f1f3f4;
+        color: #333;
+        padding: 0.8rem 1rem;
+        border-radius: 18px 18px 18px 5px;
+        margin: 0.5rem 0;
+        margin-right: 2rem;
     }
     
-    /* Remove extra spacing */
-    .element-container {
-        margin-bottom: 0.5rem !important;
-    }
-    
-    /* TTS button container */
-    .tts-container {
-        margin-top: 0.5rem;
-        margin-bottom: 0;
-    }
-    
-    /* Success message styling */
-    .stSuccess {
-        padding: 0.25rem;
-        font-size: 0.8rem;
-    }
-    
-    /* Spinner styling */
-    .stSpinner {
-        text-align: center;
+    /* Toast styling */
+    .stToast {
+        background: linear-gradient(90deg, #4ecdc4 0%, #44a08d 100%);
     }
     </style>
     """, unsafe_allow_html=True)
 
     # Header dengan emoji dan styling
     st.markdown("""
-    <div style='text-align: center; padding: 1rem 0 2rem 0;'>
+    <div style='text-align: center; padding: 1rem 0;'>
         <h2 style='color: #667eea; margin: 0;'>💬 Chat with Your Documents</h2>
         <p style='color: #666; margin: 0.5rem 0;'>Ask questions about your uploaded documents</p>
     </div>
@@ -107,73 +105,74 @@ def render_chat():
     if "processing" not in st.session_state:
         st.session_state.processing = False
 
-    # Display chat messages
-    if st.session_state.messages:
-        for i, msg in enumerate(st.session_state.messages):
-            with st.chat_message(msg["role"]):
-                st.markdown(msg["content"])
-                
-                # TTS button untuk assistant messages
-                if msg["role"] == "assistant":
-                    # Create a container for TTS button with custom styling
-                    tts_container = st.container()
-                    with tts_container:
-                        st.markdown('<div class="tts-container">', unsafe_allow_html=True)
-                        col1, col2 = st.columns([1, 9])
+    # Chat history container
+    chat_container = st.container()
+    
+    with chat_container:
+        if st.session_state.messages:
+            for i, msg in enumerate(st.session_state.messages):
+                with st.chat_message(msg["role"]):
+                    st.markdown(msg["content"])
+                    
+                    # TTS button untuk assistant messages
+                    if msg["role"] == "assistant":
+                        col1, col2, col3 = st.columns([1, 1, 8])
                         with col1:
-                            st.markdown('<div class="tts-button">', unsafe_allow_html=True)
-                            if st.button("🔊", key=f"tts_{i}", help="Bacakan jawaban ini"):
+                            if st.button(
+                                "🔊", 
+                                key=f"tts_{i}",
+                                help="Bacakan jawaban ini",
+                                use_container_width=True
+                            ):
                                 with st.spinner("🗣️ Sedang berbicara..."):
-                                    try:
-                                        speak_text(msg["content"])
-                                        st.success("✅ Selesai!")
-                                    except Exception as e:
-                                        st.error(f"❌ Error: {str(e)}")
-                            st.markdown('</div>', unsafe_allow_html=True)
-                        st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Show processing indicator jika AI sedang berpikir
-        if st.session_state.processing:
-            with st.chat_message("assistant"):
-                st.markdown("🤔 **Sedang berpikir...**")
-                
-    else:
-        # Welcome message
-        st.markdown("""
-        <div style='text-align: center; padding: 3rem 1rem; color: #666; background: #f8f9fa; border-radius: 15px; margin: 2rem 0;'>
-            <h4 style='color: #667eea; margin-bottom: 1rem;'>👋 Selamat datang!</h4>
-            <p style='margin: 0;'>Mulai percakapan dengan mengetik pertanyaan atau menggunakan mikrofon</p>
-        </div>
-        """, unsafe_allow_html=True)
+                                    speak_text(msg["content"])
+                                    st.success("✅ Selesai berbicara!")
+            
+            # Show processing indicator jika AI sedang berpikir
+            if st.session_state.processing:
+                with st.chat_message("assistant"):
+                    with st.spinner("🤔 Sedang berpikir..."):
+                        st.empty()  # Placeholder untuk menunjukkan AI sedang memproses
+        else:
+            # Welcome message
+            st.markdown("""
+            <div style='text-align: center; padding: 2rem; color: #666;'>
+                <h4>👋 Selamat datang!</h4>
+                <p>Mulai percakapan dengan mengetik pertanyaan atau menggunakan mikrofon</p>
+            </div>
+            """, unsafe_allow_html=True)
 
-    # Input section dengan spacing yang proper
-    st.markdown("<br>", unsafe_allow_html=True)
+    # Input section dengan layout yang lebih baik
+    st.markdown("---")
     
     # Create columns for input layout
-    input_col1, input_col2 = st.columns([5, 1])
+    input_col1, input_col2 = st.columns([6, 1])
     
     with input_col1:
         user_input = st.chat_input("💭 Ketik pertanyaan Anda di sini...")
     
     with input_col2:
-        st.markdown('<div class="mic-button">', unsafe_allow_html=True)
-        mic_clicked = st.button("🎤", key="mic_button", help="Klik untuk berbicara")
-        st.markdown('</div>', unsafe_allow_html=True)
+        mic_clicked = st.button(
+            "🎤", 
+            key="mic_button",
+            help="Klik untuk berbicara",
+            use_container_width=True
+        )
 
     # Handle microphone input
-    if mic_clicked and not st.session_state.processing:
+    if mic_clicked:
         with st.spinner("🎧 Mendengarkan..."):
             try:
                 recognized = recognize_speech_from_mic()
                 if recognized:
                     st.session_state.mic_input = recognized
-                    st.success(f"🗣️ Terdeteksi: '{recognized}'")
+                    st.toast(f"🗣️ Terdeteksi: '{recognized}'", icon="🎉")
                     # Auto-submit the recognized text
                     user_input = recognized
                 else:
-                    st.warning("❌ Tidak ada suara yang terdeteksi")
+                    st.toast("❌ Tidak ada suara yang terdeteksi", icon="⚠️")
             except Exception as e:
-                st.error(f"❌ Error: {str(e)}")
+                st.toast(f"❌ Error: {str(e)}", icon="🚨")
 
     # Process user input
     if user_input and not st.session_state.processing:
@@ -184,19 +183,16 @@ def render_chat():
         st.session_state.processing = True
         
         # Clear mic input
-        st.session_state.mic_input = ""
+        if "mic_input" in st.session_state:
+            st.session_state.mic_input = ""
         
-        # Rerun to show user message and start processing
+        # Rerun to show user message immediately
         st.rerun()
 
     # Process AI response jika sedang processing
-    if st.session_state.processing and st.session_state.messages:
+    if st.session_state.processing:
         # Get the last user message
-        last_user_message = None
-        for msg in reversed(st.session_state.messages):
-            if msg["role"] == "user":
-                last_user_message = msg["content"]
-                break
+        last_user_message = next((msg["content"] for msg in reversed(st.session_state.messages) if msg["role"] == "user"), None)
         
         if last_user_message:
             try:
@@ -241,10 +237,9 @@ def render_chat():
             st.rerun()
 
     # Footer info
-    st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown("---")
     st.markdown("""
-    <div style='text-align: center; color: #666; font-size: 0.85rem; padding: 1rem; background: #f8f9fa; border-radius: 10px; margin-top: 1rem;'>
+    <div style='text-align: center; color: #666; font-size: 0.8rem; padding: 1rem;'>
         💡 <strong>Tips:</strong> Gunakan mikrofon untuk input suara atau ketik langsung. 
         Klik tombol 🔊 untuk mendengar jawaban.
     </div>
