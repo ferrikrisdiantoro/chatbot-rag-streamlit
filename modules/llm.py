@@ -4,7 +4,6 @@ from langchain_groq import ChatGroq
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 
-load_dotenv()
 LLM_API = st.secrets("LLM_API_KEY")
 
 def get_llm_chain(vectorstore):
