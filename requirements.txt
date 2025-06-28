@@ -91,7 +91,7 @@ orjson==3.10.18
 packaging==24.2
 pandas==2.3.0
 pillow==11.2.1
-pinecone-client==6.0.0
+pinecone==7.3.0
 pinecone-plugin-interface==0.0.7
 playsound==1.2.2
 pluggy==1.6.0
