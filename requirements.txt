@@ -10,6 +10,7 @@ attrs==25.3.0
 blinker==1.9.0
 cachetools==5.3.1
 certifi==2025.6.15
+gtts==2.4.0
 cffi==1.17.1
 charset-normalizer==3.4.2
 click==8.2.1
