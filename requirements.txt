@@ -13,7 +13,6 @@ certifi==2025.6.15
 gtts==2.4.0
 cffi==1.17.1
 charset-normalizer==3.4.2
-click==8.2.1
 cloudpickle==3.1.1
 colorama==0.4.6
 comtypes==1.4.11
