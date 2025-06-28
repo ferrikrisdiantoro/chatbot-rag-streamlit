@@ -8,9 +8,6 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from pinecone import Pinecone, ServerlessSpec
 
-# Load .env
-load_dotenv()
-
 # ENV variables
 PINECONE_API_KEY = st.secrets("PINECONE_API_KEY")
 INDEX_NAME = st.secrets("PINECONE_DB_NAME")
